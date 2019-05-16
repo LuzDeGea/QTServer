@@ -1,53 +1,57 @@
 package mining;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+
 import data.Data;
 
-public class ClusterSet {
+public class ClusterSet implements Iterable<Cluster> {
 
-	private Cluster C[] = new Cluster[0];
+	private Set<Cluster> C = new TreeSet<Cluster>();
 
 	// Metodi
 
 	ClusterSet() {
 	}
 
-	void add(Cluster c) {
-		final Cluster tempC[] = new Cluster[C.length + 1];
-		for (int i = 0; i < C.length; i++) {
-			tempC[i] = C[i];
-		}
-		tempC[C.length] = c;
-		C = tempC;
-	}
-
-	// Comportamento: restituisce C[i]
-	Cluster get(int i) {
-		return C[i];
+	// aggiunge a C il cluster c
+	void add(final Cluster c) {
+		C.add(c);
 	}
 
 	// Comportamento: Restituisce una stringa fatta da ciascun centroide
 	// dell’insieme dei cluster.
+	// toString a 0 parametri.
 	@Override
 	public String toString() {
 		String str = "";
-		for (int i = 0; i < C.length; i++) {
-			if (C[i] != null) {
-				str += i + ":" + C[i].getCentroid() + "\n";
-			}
+		int i = 0;
+		Iterator<Cluster> it_C = C.iterator();
+		while (it_C.hasNext()) {
+			str += i + ":" + it_C.next().getCentroid() + "\n";
+			i++;
 		}
 		return str;
 	}
 
 	// Comportamento: Restituisce una stringa che descriva lo stato di
 	// ciascun cluster in C
-	public String toString(Data data) {
+	public String toString(final Data data) {
 		String str = "";
-		for (int i = 0; i < C.length; i++) {
-			if (C[i] != null) {
-				str += i + ":" + C[i].toString(data) + "\n";
-			}
+		int i = 1;
+		Iterator<Cluster> it_C = C.iterator();
+		while (it_C.hasNext()) {
+			// stampa: Centroid=(...).
+			str += i + ":" + it_C.next().toString(data) + "\n";
+			i++;
 		}
 		return str;
+	}
+
+	@Override
+	public Iterator<Cluster> iterator() {
+		return this.C.iterator();
 	}
 
 }

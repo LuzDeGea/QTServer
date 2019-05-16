@@ -1,12 +1,16 @@
 package mining;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import data.Data;
 import data.Tuple;
-import utility.ArraySet;
 
-class Cluster {
+class Cluster implements Iterable<Integer>, Comparable<Cluster> {
 
 	private final Tuple centroid;
-	private final ArraySet clusteredData;
+	private Set<Integer> clusteredData = new HashSet<Integer>();
 
 	/*
 	 * Cluster(){
@@ -14,10 +18,8 @@ class Cluster {
 	 * }
 	 */
 
-	Cluster(Tuple centroid) {
+	Cluster(final Tuple centroid) {
 		this.centroid = centroid;
-		clusteredData = new ArraySet();
-
 	}
 
 	Tuple getCentroid() {
@@ -25,28 +27,24 @@ class Cluster {
 	}
 
 	// return true if the tuple is changing cluster
-	boolean addData(int id) {
+	boolean addData(final int id) {
 		return clusteredData.add(id);
 
 	}
 
 	// verifica se una transazione è clusterizzata nell'array corrente
-	boolean contain(int id) {
-		return clusteredData.get(id);
+	boolean contain(final int id) {
+		return this.clusteredData.contains(id);
 	}
 
 	// remove the tuplethat has changed the cluster
-	void removeTuple(int id) {
-		clusteredData.delete(id);
+	void removeTuple(final int id) {
+		clusteredData.remove(id);
 
 	}
 
 	int getSize() {
-		return clusteredData.size();
-	}
-
-	int[] iterator() {
-		return clusteredData.toArray();
+		return this.clusteredData.size();
 	}
 
 	@Override
@@ -60,24 +58,40 @@ class Cluster {
 
 	}
 
-	public String toString(Data data) {
+	public String toString(final Data data) {
 		String str = "Centroid=(";
 		for (int i = 0; i < centroid.getLength(); i++) {
 			str += centroid.get(i) + " ";
 		}
 		str += ")\nExamples:\n";
-		final int array[] = clusteredData.toArray();
-		for (int i = 0; i < array.length; i++) {
+		// Errore ????
+		for (Integer i : clusteredData) {
 			str += "[";
 			for (int j = 0; j < data.getNumberOfAttributes(); j++) {
-				str += data.getAttributeValue(array[i], j) + " ";
+				str += data.getAttributeValue(i, j) + " ";
 			}
-			str += "] dist=" + getCentroid().getDistance(data.getItemSet(array[i])) + "\n";
 
+			str += "] dist=" + getCentroid().getDistance(data.getItemSet(i)) + "\n";
 		}
-		str += "\nAvgDistance=" + getCentroid().avgDistance(data, array);
+		str += "\nAvgDistance=" + getCentroid().avgDistance(data, clusteredData);
 		return str;
+	}
 
+	@Override
+	public Iterator<Integer> iterator() {
+		return clusteredData.iterator();
+	}
+
+	// Il comparatore confronta due cluster
+	// in base alla popolosità restituendo
+	// -1 oppure +1. Usare l'iteratore dove possibile.
+	@Override
+	public int compareTo(final Cluster clu) {
+		if (clusteredData.size() > clu.getSize()) {
+			return 1;
+		} else {
+			return -1;
+		}
 	}
 
 }

@@ -1,5 +1,7 @@
 package mining;
 
+import java.util.Iterator;
+
 import data.Data;
 import data.Tuple;
 
@@ -30,9 +32,9 @@ public class QTMiner {
 	 * 1. Costruisce un cluster per ciascuna tupla (di data) non ancora
 	 * clusterizzata, includendo nel cluster i punti (non ancora clusterizzati in
 	 * alcun altro cluster) che ricadano nel vicinato sferico della tuple avente
-	 * raggio radius 2. Salva il candidato cluster più popoloso e rimuove tutti
-	 * punti di tale cluster dall'elenco delle tuple ancora da clusterizzare 3.
-	 * Ritorna al passo 1 finchè ci sono ancora tuple da assegnare ad un cluster
+	 * raggio radius da input. Salva il candidato cluster più popoloso e rimuove
+	 * tutti punti di tale cluster dall'elenco delle tuple ancora da clusterizzare
+	 * 3. Ritorna al passo 1 finchè ci sono ancora tuple da assegnare ad un cluster
 	 */
 	public int compute(final Data data) throws ClusteringRadiusException, EmptyDatasetException {
 		if (data.getNumberOfExamples() == 0) {
@@ -48,22 +50,20 @@ public class QTMiner {
 		int countClustered = 0;
 		while (countClustered != data.getNumberOfExamples()) {
 			// Ricerca cluster più popoloso
-			final Cluster c = buildCandidateCluster(data, isClustered);
+			Cluster c = buildCandidateCluster(data, isClustered);
 			C.add(c);
 			numclusters++;
 
 			// Rimuovo tuple clusterizzate da dataset
-			final int clusteredTupleId[] = c.iterator();
-			for (int i = 0; i < clusteredTupleId.length; i++) {
-				isClustered[clusteredTupleId[i]] = true;
+			Iterator<Integer> clusteredTupleId = c.iterator();
+			while (clusteredTupleId.hasNext()) {
+				isClustered[clusteredTupleId.next()] = true;
 			}
-
 			countClustered += c.getSize();
 		}
 		if (numclusters == 1) {
 			throw new ClusteringRadiusException();
 		}
-
 		return numclusters;
 	}
 
@@ -105,7 +105,6 @@ public class QTMiner {
 				Cpopoloso = C[i];
 			}
 		}
-
 		return Cpopoloso;
 	}
 

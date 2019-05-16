@@ -24,7 +24,9 @@ public class MainTest {
 
 			final QTMiner qt = new QTMiner(radius);
 			try {
+				// Esecuzione Principale //
 				int numIter = qt.compute(data);
+				///////////////////////////
 				System.out.println("Number of clusters:" + numIter);
 				System.out.println(qt.getC().toString(data));
 			} catch (ClusteringRadiusException e) {
