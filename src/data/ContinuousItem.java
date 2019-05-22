@@ -17,9 +17,9 @@ class ContinuousItem extends Item {
 	 */
 	@Override
 	double distance(final Object a) {
-		// TODO
-		return 0;
+		return Math.abs(((ContinuousAttribute) (this.getAttribute())).getScaledValue((Double) this.getValue())
+				- ((ContinuousAttribute) (this.getAttribute())).getScaledValue((Double) a));
+
 	}
-	// return Math.abs(this.getValue() - ContinuousAttribute.getScaledValue(a));
 
 }

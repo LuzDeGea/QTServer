@@ -1,5 +1,6 @@
 package mining;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -7,7 +8,7 @@ import java.util.Set;
 import data.Data;
 import data.Tuple;
 
-class Cluster implements Iterable<Integer>, Comparable<Cluster> {
+class Cluster implements Iterable<Integer>, Comparable<Cluster>, Serializable {
 
 	private final Tuple centroid;
 	private Set<Integer> clusteredData = new HashSet<Integer>();

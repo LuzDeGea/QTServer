@@ -14,21 +14,21 @@ public class Data {
 
 	public Data() {
 		data = new Object[14][5];
-		// tuple
-		data[0] = new String[] { "Sunny", "Hot", "High", "Weak", "No" };
-		data[1] = new String[] { "Sunny", "Hot", "High", "Strong", "No" };
-		data[2] = new String[] { "Overcast", "Hot", "High", "Weak", "Yes" };
-		data[3] = new String[] { "Rain", "Mild", "High", "Weak", "Yes" };
-		data[4] = new String[] { "Rain", "Cool", "Normal", "Weak", "Yes" };
-		data[5] = new String[] { "Rain", "Cool", "Normal", "Strong", "No" };
-		data[6] = new String[] { "Overcast", "Cool", "Normal", "Strong", "Yes" };
-		data[7] = new String[] { "Sunny", "Mild", "High", "Weak", "No" };
-		data[8] = new String[] { "Sunny", "Cool", "Normal", "Weak", "Yes" };
-		data[9] = new String[] { "Rain", "Mild", "Normal", "Weak", "Yes" };
-		data[10] = new String[] { "Sunny", "Mild", "Normal", "Strong", "Yes" };
-		data[11] = new String[] { "Overcast", "Mild", "High", "Strong", "Yes" };
-		data[12] = new String[] { "Overcast", "Hot", "Normal", "Weak", "Yes" };
-		data[13] = new String[] { "Rain", "Mild", "High", "Strong", "No" };
+		// inserimento tuple
+		data[0] = new Object[] { "Sunny", 30.3, "High", "Weak", "No" };
+		data[1] = new Object[] { "Sunny", 30.3, "High", "Strong", "No" };
+		data[2] = new Object[] { "Overcast", 30d, "High", "Weak", "Yes" };
+		data[3] = new Object[] { "Rain", 13d, "High", "Weak", "Yes" };
+		data[4] = new Object[] { "Rain", 0d, "Normal", "Weak", "Yes" };
+		data[5] = new Object[] { "Rain", 0d, "Normal", "Strong", "No" };
+		data[6] = new Object[] { "Overcast", 0.1, "Normal", "Strong", "Yes" };
+		data[7] = new Object[] { "Sunny", 13d, "High", "Weak", "No" };
+		data[8] = new Object[] { "Sunny", 0.1, "Normal", "Weak", "Yes" };
+		data[9] = new Object[] { "Rain", 12d, "Normal", "Weak", "Yes" };
+		data[10] = new Object[] { "Sunny", 12.5, "Normal", "Strong", "Yes" };
+		data[11] = new Object[] { "Overcast", 12.5, "High", "Strong", "Yes" };
+		data[12] = new Object[] { "Overcast", 29.21, "Normal", "Weak", "Yes" };
+		data[13] = new Object[] { "Rain", 12.5, "High", "Strong", "No" };
 
 		numberOfExamples = 14; // numberOfExamples
 
@@ -44,11 +44,13 @@ public class Data {
 		outLookValues[2] = "sunny";
 		attributeSet.add(0, new DiscreteAttribute("Outlook", 0, outLookValues));
 
+		// dove 0 rappresenta la temperaltura minima osservata in Data e 30.3
+		// rappresenta la temperatura massima
 		final String temperatureValue[] = new String[3];
 		temperatureValue[0] = "cool";
 		temperatureValue[1] = "hot";
 		temperatureValue[2] = "smild";
-		attributeSet.add(1, new DiscreteAttribute("Temperature", 1, temperatureValue));
+		attributeSet.add(1, new ContinuousAttribute("Temperature", 1, 0, 30.3));
 
 		final String HumidityValues[] = new String[2];
 		HumidityValues[0] = "high";
@@ -119,13 +121,21 @@ public class Data {
 		return schema;
 	}
 
-	// Input: indice di riga
-	// Comportamento: Crea e restituisce un oggetto di Tuple che modella
-	// come sequenza di coppie Attributo-valore la i-esima riga in data
+	/*
+	 * Input: indice di riga Comportamento: Crea e un istanza di Tuple che modelli
+	 * la transazione con indice di riga index in data. Restituisce il riferimento a
+	 * tale istanza. Usare lo RTTI per distinguere tra ContinuousAttribute e
+	 * DiscreteAttribute (e quindi creare nella tupla un ContinuousItem o un
+	 * DiscreteItem)
+	 */
 	public Tuple getItemSet(final int index) {
 		final Tuple tuple = new Tuple(attributeSet.size());
 		for (int i = 0; i < attributeSet.size(); i++) {
-			tuple.add(new DiscreteItem((DiscreteAttribute) attributeSet.get(i), (String) data[index][i]), i);
+			if (attributeSet.get(i) instanceof DiscreteAttribute) {
+				tuple.add(new DiscreteItem((DiscreteAttribute) attributeSet.get(i), (String) data[index][i]), i);
+			} else {
+				tuple.add(new ContinuousItem(attributeSet.get(i), (double) data[index][i]), i);
+			}
 		}
 		return tuple;
 	}

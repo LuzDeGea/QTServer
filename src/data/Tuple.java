@@ -1,9 +1,10 @@
 package data;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
 
-public class Tuple {
+public class Tuple implements Serializable {
 
 	private final Item[] tuple;
 
@@ -13,6 +14,15 @@ public class Tuple {
 	// Comportamento: costruisce l'oggetto riferito da tuple
 	Tuple(final int size) {
 		tuple = new Item[size];
+	}
+
+	@Override
+	public String toString() {
+		String str = "";
+		for (int i = 0; i < tuple.length; i++) {
+			str += tuple[i];
+		}
+		return str;
 	}
 
 	public int getLength() { // Comportamento: restituisce tuple.length

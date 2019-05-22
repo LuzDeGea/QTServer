@@ -1,44 +1,100 @@
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import data.Data;
+import data.EmptyDatasetException;
 import keyboardinput.Keyboard;
 import mining.ClusteringRadiusException;
-import mining.EmptyDatasetException;
 import mining.QTMiner;
 
 public class MainTest {
-
 	/**
 	 * @param args
 	 */
-	public static void main(final String[] args) {
-		char continuare = 'x';
+
+	private int menu() {
+		int answer;
 		do {
-			double radius = 0;
-
-			final Data data = new Data();
-			System.out.println(data);
-			// final double radius = 2.0;
-			do {
-				System.out.println("Insert radius (>0)=");
-				radius = Keyboard.readDouble();
-			} while (radius <= 0);
-
-			final QTMiner qt = new QTMiner(radius);
-			try {
-				// Esecuzione Principale //
-				int numIter = qt.compute(data);
-				///////////////////////////
-				System.out.println("Number of clusters:" + numIter);
-				System.out.println(qt.getC().toString(data));
-			} catch (ClusteringRadiusException e) {
-				System.out.println(data.getNumberOfExamples() + " tuples in one cluster! ");
-			} catch (EmptyDatasetException e) {
-				System.out.println("error 404, tuples not found");
-			}
-			do {
-				System.out.println("New execution?(y/n) ");
-				continuare = Keyboard.readChar();
-			} while ((continuare != 'y') && (continuare != 'n'));
-		} while (continuare != 'n');
-		System.out.println("Esecuzione Terminata.");
+			System.out.println("(1) Load Clusters from File");
+			System.out.println("(2) Load Data");
+			System.out.print("(1/2):");
+			answer = Keyboard.readInt();
+		} while (answer <= 0 || answer > 2);
+		return answer;
 	}
+
+	private QTMiner learningFromFile() throws FileNotFoundException, IOException, ClassNotFoundException {
+		String fileName = "";
+		System.out.print("File name:");
+		fileName = Keyboard.readString();
+		return new QTMiner(fileName + ".dmp");
+	}
+
+	// main
+	public static void main(final String[] args) {
+
+		MainTest main = new MainTest();
+		do {
+			int menuAnswer = main.menu();
+			switch (menuAnswer) {
+			case 1:
+				try {
+					QTMiner qt = main.learningFromFile();
+					System.out.println(qt);
+				} catch (FileNotFoundException e1) {
+					System.out.println(e1.getMessage());
+				} catch (IOException e1) {
+					System.out.println(e1.getMessage());
+				} catch (ClassNotFoundException e1) {
+					System.out.println(e1.getMessage());
+				}
+				break;
+			case 2:
+				Data data = new Data();
+				System.out.println(data);
+				char answer = 'y';
+				do {
+					double radius = 1.0;
+					do {
+						System.out.print("Insert radius (>0):");
+						radius = Keyboard.readDouble();
+					} while (radius <= 0);
+					QTMiner qt = new QTMiner(radius);
+					try {
+						int numC = qt.compute(data);
+						System.out.println("Number of clusters:" + numC);
+						System.out.println(qt.getC().toString(data));
+						System.out.print("Backup file name:");
+						String fileName = Keyboard.readString() + ".dmp";
+						System.out.println("Saving clusters in " + fileName);
+						try {
+							qt.salva(fileName);
+						} catch (FileNotFoundException e) {
+							// Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// Auto-generated catch block
+							e.printStackTrace();
+						}
+						System.out.println("Saving transaction ended!");
+
+					} catch (EmptyDatasetException | ClusteringRadiusException e) {
+						System.out.println(e.getMessage());
+					}
+					System.out.print("New execution?(y/n)");
+					answer = Keyboard.readChar();
+				} while (Character.toUpperCase(answer) == 'Y');
+				break;
+			default:
+				System.out.println("Invalid option!");
+
+			}
+
+			System.out.print("Would you choose another option from the menu?(y/n)");
+			if (Character.toUpperCase(Keyboard.readChar()) != 'Y') {
+				break;
+			}
+		} while (true);
+	}
+
 }

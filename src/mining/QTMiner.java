@@ -1,14 +1,21 @@
 package mining;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Iterator;
 
 import data.Data;
+import data.EmptyDatasetException;
 import data.Tuple;
 
 public class QTMiner {
 
-	private final ClusterSet C;
-	private final double radius;
+	private ClusterSet C;
+	private double radius;
 
 	// Metodi
 
@@ -18,6 +25,41 @@ public class QTMiner {
 	public QTMiner(final double radius) {
 		C = new ClusterSet();
 		this.radius = radius;
+	}
+
+	// Comportamento: Restituisce una stringa fatta da ciascun centroide
+	// dell’insieme dei cluster.
+	// toString a 0 parametri.
+	@Override
+	public String toString() {
+		String str = "";
+		int i = 1;
+		Iterator<Cluster> it_C = C.iterator();
+		while (it_C.hasNext()) {
+			str += i + ":Centroid=(" + it_C.next().getCentroid() + ")\n";
+			i++;
+		}
+		return str;
+	}
+
+	/*
+	 * Input: percorso+ nome file Comportamento: Apre il file identificato da
+	 * fileName, legge l'oggetto ivi memorizzato e lo assegna a C.
+	 */
+	public QTMiner(final String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
+		C = (ClusterSet) in.readObject();
+		in.close();
+	}
+
+	/*
+	 * Input: percorso+ nome file Comportamento: Apre il file identificato da
+	 * fileName e salva l'oggetto riferito da C in tale file.
+	 */
+	public void salva(final String fileName) throws FileNotFoundException, IOException {
+		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
+		out.writeObject(C);
+		out.close();
 	}
 
 	// Comportamento: restituisce C
