@@ -1,71 +1,70 @@
 package data;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+
+import database.DatabaseConnectionException;
+import database.DbAccess;
+import database.EmptySetException;
+import database.Example;
+import database.TableSchema;
+import database.Table_Data;
 
 public class Data {
 
 	// una matrice nXm di tipo Object dove ogni riga modella una transazioni
-	private final Object data[][];
+	private List<Example> data = new ArrayList<Example>();
 	// cardinalità dell’insieme di transazioni (numero di righe in data)
-	private final int numberOfExamples;
+	private int numberOfExamples;
 	// un vettore degli attributi in ciascuna tupla (schema della tabella di dati)
-	private List<Attribute> attributeSet;
+	private List<Attribute> attributeSet = new LinkedList<Attribute>();
 
-	public Data() {
-		data = new Object[14][5];
-		// inserimento tuple
-		data[0] = new Object[] { "Sunny", 30.3, "High", "Weak", "No" };
-		data[1] = new Object[] { "Sunny", 30.3, "High", "Strong", "No" };
-		data[2] = new Object[] { "Overcast", 30d, "High", "Weak", "Yes" };
-		data[3] = new Object[] { "Rain", 13d, "High", "Weak", "Yes" };
-		data[4] = new Object[] { "Rain", 0d, "Normal", "Weak", "Yes" };
-		data[5] = new Object[] { "Rain", 0d, "Normal", "Strong", "No" };
-		data[6] = new Object[] { "Overcast", 0.1, "Normal", "Strong", "Yes" };
-		data[7] = new Object[] { "Sunny", 13d, "High", "Weak", "No" };
-		data[8] = new Object[] { "Sunny", 0.1, "Normal", "Weak", "Yes" };
-		data[9] = new Object[] { "Rain", 12d, "Normal", "Weak", "Yes" };
-		data[10] = new Object[] { "Sunny", 12.5, "Normal", "Strong", "Yes" };
-		data[11] = new Object[] { "Overcast", 12.5, "High", "Strong", "Yes" };
-		data[12] = new Object[] { "Overcast", 29.21, "Normal", "Weak", "Yes" };
-		data[13] = new Object[] { "Rain", 12.5, "High", "Strong", "No" };
+	// costruttore (con nome della tabella)
+	public Data(final String T_name) {
+		DbAccess access = new DbAccess();
+		try {
+			access.initConnection();
+		} catch (DatabaseConnectionException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Table_Data dataSet = new Table_Data(access);
 
-		numberOfExamples = 14; // numberOfExamples
+		try {
+			data = dataSet.getDistinctTransazioni(T_name);
+		} catch (SQLException | EmptySetException e) {
+			// TODO Auto-generated catch block
+		}
 
-		attributeSet = new LinkedList<Attribute>(); // explanatory Set
+		numberOfExamples = data.size();
 
-		// avvalorare ciascune elemento di attributeSet con un oggetto della classe
-		// DiscreteAttribute che modella il corrispondente attributo (e.g. outlook,
-		// temperature,etc)
-		// nel seguito si fornisce l'esempio per outlook
-		final String outLookValues[] = new String[3];
-		outLookValues[0] = "overcast";
-		outLookValues[1] = "rain";
-		outLookValues[2] = "sunny";
-		attributeSet.add(0, new DiscreteAttribute("Outlook", 0, outLookValues));
+		try {
+			TableSchema dataSchema = new TableSchema(access, T_name);
+			for (int i = 0; i < dataSchema.getNumberOfAttributes(); i++) {
+				if (dataSchema.getColumn(i).isNumber()) {
+					attributeSet.add(new ContinuousAttribute(dataSchema.getColumn(i).getColumnName(), i,
+							(float) dataSet.getAggregateColumnValue(T_name, dataSchema.getColumn(i),
+									database.QUERY_TYPE.MIN),
+							(float) dataSet.getAggregateColumnValue(T_name, dataSchema.getColumn(i),
+									database.QUERY_TYPE.MAX)));
+				} else {
+					Set<Object> valueSet = dataSet.getDistinctColumnValues(T_name, dataSchema.getColumn(i));
 
-		// dove 0 rappresenta la temperaltura minima osservata in Data e 30.3
-		// rappresenta la temperatura massima
-		final String temperatureValue[] = new String[3];
-		temperatureValue[0] = "cool";
-		temperatureValue[1] = "hot";
-		temperatureValue[2] = "smild";
-		attributeSet.add(1, new ContinuousAttribute("Temperature", 1, 0, 30.3));
-
-		final String HumidityValues[] = new String[2];
-		HumidityValues[0] = "high";
-		HumidityValues[1] = "normal";
-		attributeSet.add(2, new DiscreteAttribute("Humidity", 2, HumidityValues));
-
-		final String windValues[] = new String[2];
-		windValues[0] = "weak";
-		windValues[1] = "strong";
-		attributeSet.add(3, new DiscreteAttribute("Wind", 3, windValues));
-
-		final String playTennisValues[] = new String[2];
-		playTennisValues[0] = "yes";
-		playTennisValues[1] = "no";
-		attributeSet.add(4, new DiscreteAttribute("PlayTennis", 4, playTennisValues));
+					String[] ary = new String[valueSet.size()];
+					int x = 0;
+					for (Object j : valueSet) {
+						ary[x] = (String) j;
+						x++;
+					}
+					attributeSet.add(new DiscreteAttribute(dataSchema.getColumn(i).getColumnName(), i, ary));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public int getNumberOfExamples() {
@@ -82,13 +81,8 @@ public class Data {
 		return attributeSet.size();
 	}
 
-	public Object getAttributeValue(final int exampleIndex, final int attributeIndex) {
-		// Input: indice di riga , indice di colonna in riferimento alla matirce
-		// memorizzata in data
-		// Output: valore assunto in data dall'attributo in posizione attributeIndex,
-		// nella riga in posizione exampleIndex
-		// Comportamento: restituisce data[exampleIndex][attributeIndex]
-		return data[exampleIndex][attributeIndex];
+	public Object getAttributeValue(final int exampleIndex, final int dataIndex) {
+		return data.get(exampleIndex).get(dataIndex);
 	}
 
 	public Attribute getAttribute(final int index) {
@@ -132,17 +126,19 @@ public class Data {
 		final Tuple tuple = new Tuple(attributeSet.size());
 		for (int i = 0; i < attributeSet.size(); i++) {
 			if (attributeSet.get(i) instanceof DiscreteAttribute) {
-				tuple.add(new DiscreteItem((DiscreteAttribute) attributeSet.get(i), (String) data[index][i]), i);
+				tuple.add(
+						new DiscreteItem((DiscreteAttribute) attributeSet.get(i), (String) getAttributeValue(index, i)),
+						i);
 			} else {
-				tuple.add(new ContinuousItem(attributeSet.get(i), (double) data[index][i]), i);
+				tuple.add(new ContinuousItem(attributeSet.get(i), (double) getAttributeValue(index, i)), i);
 			}
 		}
 		return tuple;
 	}
 
-	public static void main(final String args[]) {
-		final Data trainingSet = new Data();
-		System.out.println(trainingSet);
-	}
+	/*
+	 * public static void main(final String args[]) { final Data trainingSet = new
+	 * Data(); System.out.println(trainingSet); }
+	 */
 
 }
