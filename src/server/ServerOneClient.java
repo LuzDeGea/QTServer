@@ -60,8 +60,9 @@ public class ServerOneClient extends Thread {
 					raggio = (double) in.readObject();
 					////
 					qt = new QTMiner(raggio);
+					int res = qt.compute(data);
 					out.writeObject("OK");
-					out.writeObject(qt.compute(data));
+					out.writeObject(res);
 					out.writeObject(qt.toString());
 					break;
 				case 2:
@@ -81,8 +82,12 @@ public class ServerOneClient extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClusteringRadiusException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				out.writeObject("radius error");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} catch (EmptyDatasetException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
