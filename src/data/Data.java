@@ -65,6 +65,7 @@ public class Data {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		access.closeConnection();
 	}
 
 	public int getNumberOfExamples() {
